@@ -15,8 +15,6 @@
 
 int controleEstrela = 0; //CONTROLE PARA ANIMAR A TELA
 
-
-
 void desenhaTelaCena()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

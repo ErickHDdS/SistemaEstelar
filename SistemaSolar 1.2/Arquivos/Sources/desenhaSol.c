@@ -8,23 +8,23 @@
 
 #include "../Headers/esfera.h"
 
-float d = 1.0;           // Intensidade da cor difusa da luz branca
-float e = 1.0;           // Intensidade da cor especular da luz branca
-float m = 0.2;           // Intensidade da luz ambiente global
-float p = 1.0;           // A luz branca é posicional?
+float d = 1.0;                          // Intensidade da cor difusa da luz branca
+float e = 1.0;                          // Intensidade da cor especular da luz branca
+float m = 0.2;                          // Intensidade da luz ambiente global
+float p = 1.0;                          // A luz branca é posicional?
 
 bool localViewer = false;
-bool lightLigada = 1;                     // Luz branca ligada?
-float xAngle = 0.0, yAngle = 0.0;        // Rotação da luz branca
+bool lightLigada = 1;                   // Luz branca ligada?
+float xAngle = 0.0, yAngle = 0.0;       // Rotação da luz branca
 
-float xMouse = 250, yMouse = 250;        // (x,y) do ponteiro do mouse
-float larguraJanela, alturaJanela;       // (w,h) da janela
+float xMouse = 250, yMouse = 250;       // (x,y) do ponteiro do mouse
+float larguraJanela, alturaJanela;      // (w,h) da janela
 
-float s;                           // Expoente especular do material (shininess)
+float s;                                // Expoente especular do material (shininess)
 float solShine[];                       // expoente especular (shininess)
 
-float anguloSolY = 0;                 // Rotação da esfera em torno do eixo y
-int esferaLados = 200;                   // Quantas subdivisões latitudinais/longitudinais da esfera
+float anguloSolY = 0;                   // Rotação da esfera em torno do eixo y
+int esferaLados = 200;                  // Quantas subdivisões latitudinais/longitudinais da esfera
 int solTexture;
 bool usarTextura = true;
 
@@ -36,7 +36,7 @@ void desenhaSol()
     float lightAmb[] = { 0.0, 0.0, 0.0, 1.0 };
     float lightDif0[] = { d, d, d, 1.0 };
     float lightSpec0[] = { e, e, e, 1.0 };
-    float lightPos0[] = { 0.0, 0.0, 3.0, p }; // posicao da fonte de luz
+    float lightPos0[] = { 0.0, 0.0, 0.0, p }; // posicao da fonte de luz
     float globAmb[] = { m, m, m, 1.0 };
 
     // Propriedades da fonte de luz LIGHT0
@@ -52,7 +52,6 @@ void desenhaSol()
         glEnable(GL_LIGHT0);
     else 
         glDisable(GL_LIGHT0);
-
 
     // Limpa a tela e o z-buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -76,9 +75,32 @@ void desenhaSol()
 
         glColor3f(d, d, d);
 
+            // Define (atualiza) o valor do expoente de especularidade
+            solShine[0] = s;
+            glMaterialfv(GL_FRONT, GL_SHININESS, solShine);
+            glColor3f(1, 1, 1);
+
         if (lightLigada)
         {
-            if (p) glutWireSphere(0.05, 4, 4); // Esfera indicativa de luz, a ideia que essa esfera seja desenhada dentro do sol, para que o sol seja a fonte de luz
+            if (p)              // Esfera indicativa de luz, a ideia que essa esfera seja desenhada dentro do sol, para que o sol seja a fonte de luz
+            {
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, solTexture);
+
+                glPushMatrix();
+                glRotatef(anguloSolY, 0, 1, 0);
+                glRotatef(90, 1, 0, 0);
+                
+                solidSphere(1.5, esferaLados, esferaLados);
+                glPopMatrix();
+
+                if (usarTextura) 
+                {
+                    glDisable(GL_TEXTURE_2D);
+                }
+
+                glPopMatrix(); 
+            } 
             else // Seta apontando na direção da fonte de luz direcional
             {
                 glLineWidth(3.0);
@@ -102,8 +124,7 @@ void desenhaSol()
         glDisable(GL_LIGHT0);
     }
     glPopMatrix();
-
-
+/*
     // Define (atualiza) o valor do expoente de especularidade
     solShine[0] = s;
     glMaterialfv(GL_FRONT, GL_SHININESS, solShine);
@@ -114,13 +135,13 @@ void desenhaSol()
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, solTexture);
     }
-    glPushMatrix();
+        glPushMatrix();
         glRotatef(anguloSolY, 0, 1, 0);
         glRotatef(90, 1, 0, 0);
-        solidSphere(1.5, esferaLados, esferaLados);
+        //solidSphere(1.5, esferaLados, esferaLados);
 
-    glPopMatrix();
+        glPopMatrix();
     if (usarTextura) {
         glDisable(GL_TEXTURE_2D);
-    }
+    }*/
 }

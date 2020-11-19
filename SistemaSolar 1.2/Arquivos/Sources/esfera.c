@@ -6,9 +6,11 @@ void solidSphere(int radius, int stacks, int columns)
 {
     // cria uma quádrica
     GLUquadric* quadObj = gluNewQuadric();
+
     // estilo preenchido... poderia ser GLU_LINE, GLU_SILHOUETTE
     // ou GLU_POINT
     gluQuadricDrawStyle(quadObj, GLU_FILL);
+    //gluQuadricDrawStyle(quadObj, GLU_POINT);
     // chama 01 glNormal para cada vértice.. poderia ser
     // GLU_FLAT (01 por face) ou GLU_NONE
     gluQuadricNormals(quadObj, GLU_SMOOTH);
