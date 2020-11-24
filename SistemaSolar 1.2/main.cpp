@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
-
 #include <SOIL/SOIL.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <cmath>
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>      
+
 using namespace std;
 
 static bool light0Ligada = 1;   // Luz branca ligada?
@@ -23,17 +25,15 @@ static float larguraJanela, alturaJanela;       // (w,h) da janela
 static bool isLightingOn = true;               // O sistema de iluminação está ligado?
 static int esferaLados = 2000;                   // Quantas subdivisões latitudinais/longitudinais da esfera
 static bool localViewer = false;
-static int sunTexture, mercurioTexture, venusTexture, terraTexture, marteTexture, jupiterTexture,
-           saturnoTexture, uranoTexture, neturnoTexture, plutaoTexture;
+static int sunTexture, mercurioTexture, venusTexture, terraTexture, marteTexture, jupiterTexture, saturnoTexture, uranoTexture, neturnoTexture, plutaoTexture;
 static bool usarTextura = true;
+
+int camera = 1;
+int zoomPlaneta = 120;
+int eixoY = 0;
+int eixoX = 0;
+
 static float xMouse = 250, yMouse = 250;        // (x,y) do ponteiro do mouse
-
-enum Objetos {
-    QUADRADO
-};
-
-GLubyte objetoAtual = QUADRADO;
-GLuint fundoTexture;
 
 typedef struct angulo
 {
@@ -75,7 +75,23 @@ Planeta CriaPlaneta(int textura, float anguloX, float anguloY, float x_rotate, f
 }
 
 Planeta sol,mercurio,venus,terra,marte,jupiter,saturno,urano,neturno,plutao;
-GLuint planetas[10];
+
+Mix_Music *musicaDeFundo = NULL;
+
+
+void inicializarMusica()
+{
+    SDL_Init( SDL_INIT_AUDIO);
+    Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 1024 ); //- inicializa SDL_Mixer
+    atexit(Mix_CloseAudio);
+}
+
+void carregarMusica()
+{
+    musicaDeFundo = Mix_LoadMUS("star_wars.mp3");
+    if(musicaDeFundo == NULL)
+      cout << "nada" << endl;
+}
 // Escreve uma cadeia de caracteres
 void escreveTextoNaTela(void *font, char *string){
     char *c;
@@ -96,8 +112,8 @@ void informacoesTela(void){
     glRasterPos3f(-1.0, 1.10, -2.0);
     escreveTextoNaTela((void*)font, (char*)"Iluminacao (l): ");
     escreveTextoNaTela((void*)font, (char*)(isLightingOn ? "ligada" : "desligada"));
-
     floatParaString(theStringBuffer, 4, IntensidadeLuzAmbiente);
+
     glRasterPos3f(-1.0, 1.00, -2.0);
     escreveTextoNaTela((void*)font, (char*)"Luz ambiente global: ");
     glRasterPos3f(-1.0, 0.95, -2.0);
@@ -132,12 +148,17 @@ void informacoesTela(void){
     escreveTextoNaTela((void*)font, (char*)"  - Velocidade de rotacao (r/R): ");
     floatParaString(theStringBuffer, 6, VelocidadeRotacao);
     escreveTextoNaTela((void*)font, theStringBuffer);
+
+    glRasterPos3f(-1.0, 0.30, -2.0);
+    escreveTextoNaTela((void*)font, (char*)"Câmeras: ");
+    glRasterPos3f(-1.0, 0.30, -2.0);
+    escreveTextoNaTela((void*)font, (char*)"        ");
+    floatParaString(theStringBuffer, 2, camera);
+    escreveTextoNaTela((void*)font, theStringBuffer);
 }
 
 void carregaTextura()
 {
-  // Carrega a textura
-      fundoTexture = SOIL_load_OGL_texture
 	(
 		"Image/fundo.jpg",
 		SOIL_LOAD_AUTO,
@@ -277,6 +298,7 @@ void desenhabackgroung()
 }
 // Configuração inicial do OpenGL e GLUT
 void setup(void){
+  
     //glClearColor(.4,.4,.4, 0.0);                    // fundo cinza
     glClearColor( 0, 0, 0, 0.0);
     glEnable(GL_DEPTH_TEST);                        // Ativa teste Z
@@ -350,9 +372,17 @@ void desenhaCena() {
     glLoadIdentity();
     informacoesTela();
 
-    // Posiciona a câmera de acordo com posição x,y do mouse na janela
-    //gluLookAt(1*(xMouse-larguraJanela/2)/(larguraJanela/16+150), -1*(yMouse-alturaJanela/2)/(alturaJanela/16) + 3, 5,0, 0, 0, 0, 1, 0);
-    gluLookAt(0, 150, 0,0, 0, 0,0, 0, 1);
+    if(camera == 1)
+        gluLookAt(1*(xMouse)/(larguraJanela), -1*(yMouse)/(alturaJanela) + zoomPlaneta, -5, eixoX, eixoY, 0, 0, 1, 0);
+
+    if(camera == 2)
+      gluLookAt(0, zoomPlaneta, 150 , eixoX, eixoY, 0, 0, 10,0 );
+
+    if(camera == 3) // minha ideia era essa camera focar em um planeta, mas como obter as coordenadas atuais dele?
+    {
+    //cout << terra.anguloX << endl;
+      //gluLookAt(terra.anguloX, terra.anguloY, 00, eixoX, eixoY, 0, 0, 1, 0);
+    }
 
     // Light0 e esfera = Sol
     glPushMatrix();
@@ -364,13 +394,6 @@ void desenhaCena() {
         glRotatef(sol.anguloY, 0, 1, 0);
         glRotatef(90, 1, 0, 0);
         desenhaEsfera(sol);
-        /*
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, sunTexture);
-        glRotatef(anguloSunY, 0, 1, 0);
-        //glRotatef(-90, 1, 0, 0);
-        solidSphere(8, esferaLados, esferaLados);
-        */
     glPopMatrix();
     
     if(isLightingOn)
@@ -384,7 +407,6 @@ void desenhaCena() {
     glMaterialfv(GL_FRONT, GL_SHININESS, matShine);
     glColor3f(1, 1, 1);
 
-  //(           textura         , angulo_rotate   , rotate_x, rotate_y, rotate_z, translate_x, translate_y, translate_z, medida)
   desenhaEsfera(mercurio);
   desenhaEsfera(jupiter);
   desenhaEsfera(venus);
@@ -395,97 +417,6 @@ void desenhaCena() {
   desenhaEsfera(neturno);
   desenhaEsfera(plutao);
 
-/*
-    // Desenha Mercurio
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, mercurioTexture);
-      glRotatef(anguloMercurioX, 0, 0, 1);
-      glTranslatef(-10, 0, 0);
-      // glRotatef(-90, 1, 0, 0);
-      solidSphere(0.3, esferaLados, esferaLados);
-    glPopMatrix();
-
-    // Desenha jupiter
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, jupiterTexture);
-      glRotatef(anguloJupiterX, 0, 0, 1);
-      glTranslatef(40, 0, 0);
-      // glRotatef(-90, 1, 0, 0);
-      solidSphere(8.21, esferaLados, esferaLados);
-    glPopMatrix();
-
-    // Desenha venus
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, venusTexture);
-      glRotatef(anguloVenusX, 0, 0, 1);
-      glTranslatef(-15, 0, 0);
-      //glRotatef(-90, 1, 0, 0);
-      solidSphere(0.7, esferaLados, esferaLados);
-    glPopMatrix();
-  
-    // Desenha terra
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, terraTexture);
-      glRotatef(anguloTerraX, 0, 0, 1);
-      glTranslatef(-20, 0, 0);
-      //glRotatef(-90, 0, 1, 0);
-      solidSphere(1, esferaLados, esferaLados);
-    glPopMatrix();
-
-    // Desenha marte
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, marteTexture);
-      glRotatef(anguloMarteX, 0, 0, 1);
-      glTranslatef(-25, 0, 0);
-      //glRotatef(-90, 1, 0, 0);
-      solidSphere(0.39, esferaLados, esferaLados);
-    glPopMatrix();
-
-    // Desenha saturno
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, saturnoTexture);
-      glRotatef(anguloSaturnoX, 0, 0, 1);
-      glTranslatef(-50, 0, 0);
-      // glRotatef(-90, 1, 0, 0);
-      solidSphere(6.90, esferaLados, esferaLados);
-    glPopMatrix();
-
-    // Desenha urano
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, uranoTexture);
-      glRotatef(anguloUranoX, 0, 0, 1);
-      glTranslatef(60, 0, 0);
-      // glRotatef(-90, 1, 0, 0);
-      solidSphere(2.92, esferaLados, esferaLados);
-    glPopMatrix();
-
-    // Desenha neturno
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, neturnoTexture);
-      glRotatef(anguloNeturnoX, 0, 0, 1);
-      glTranslatef(-65, 0, 0);
-      // glRotatef(-90, 1, 0, 0);
-      solidSphere(2.72, esferaLados, esferaLados);
-    glPopMatrix();
-
-    // Desenha plutao
-    glPushMatrix();
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, plutaoTexture);
-      glRotatef(anguloPlutaoX, 0, 0, 1);
-      glTranslatef(70, 0, 0);
-      // glRotatef(-90, 1, 0, 0);
-      solidSphere(0.13, esferaLados, esferaLados);
-    glPopMatrix();
-*/
     glutSwapBuffers();
 }
 
@@ -493,9 +424,27 @@ void desenhaCena() {
 void keyInput(unsigned char key, int x, int y){
     switch (key)
     {
-    case 27:
+    case 27: //esc
         exit(0);
         break;
+    case 43: //+
+        zoomPlaneta++;
+        break;
+    case 45: //-
+        zoomPlaneta--;
+        break;        
+    case 49: //1
+        camera = 1;
+        break;
+    case 50: //2
+        camera = 2;
+        break; 
+    case 51: //1
+        camera = 3;
+        break;
+    case 52: //2
+        camera = 4;
+        break;              
     case 'w':
     case 'W':
         if (light0Ligada) light0Ligada = false;
@@ -557,34 +506,33 @@ void keyInput(unsigned char key, int x, int y){
     default:
         break;
     }
+
     glutPostRedisplay();
 }
 
-/*
+
 // Callback para setas do teclado
 void specialKeyInput(int key, int x, int y){
-    // if(key == GLUT_KEY_DOWN)
-    // {
-    //     xAngle++;
-    //     if (xAngle > 360.0) xAngle -= 360.0;
-    // }
-    // if(key == GLUT_KEY_UP)
-    // {
-    //     xAngle--;
-    //     if (xAngle < 0.0) xAngle += 360.0;
-    // }
-    // if(key == GLUT_KEY_RIGHT)
-    // {
-    //     yAngle++;
-    //     if (yAngle > 360.0) yAngle -= 360.0;
-    // }
-    // if(key == GLUT_KEY_LEFT)
-    // {
-    //     yAngle--;
-    //     if (yAngle < 0.0) yAngle += 360.0;
-    // }
+     if(key == GLUT_KEY_DOWN)
+     {
+       eixoY--;
+     }
+     if(key == GLUT_KEY_UP)
+     {
+       eixoY++;
+     }
+     if(key == GLUT_KEY_RIGHT)
+     {
+       eixoX++;
+     }  
+     if(key == GLUT_KEY_LEFT)
+     {
+       eixoX--;
+     }
+
+     
     glutPostRedisplay();
-}*/
+}
 
 // Callback de redimensionamento
 void resize(int w, int h){
@@ -655,15 +603,11 @@ void rotacaoPlanetas() {
    glutPostRedisplay();
 }
 
-void mover()
+void moverPlanetas()
 {
-
     rotacaoPlanetas();
     translacaoPlanetas();
-
 }
-
-
 
 // Imprime a ajuda no console
 void imprimirAjudaConsole(void){
@@ -677,13 +621,21 @@ void imprimirAjudaConsole(void){
          << "  Aperte 'v/V' para aumentar/reduzir a velocidade de translação" << endl
          << "  Aperte 'r/R' para aumentar/reduzir a velocidade de rotacao" << endl
          << "  Aperte 'p' para alternar entre fonte posicional ou direcional." << endl
-         << "  Aperte 't' para alternar entre modo com/sem textura." << endl;
+         << "  Aperte 't' para alternar entre modo com/sem textura." << endl
+         << "  Aperte entre 1,2 para alternar as câmeras." << endl
+         << "  Utilize as setas para controlar as câmeras." << endl
+         << "  Utilize as teclas '-' e '+' para aplicar um zoom." << endl
+         << "  Pressione ESC para sair" << endl;
 }
 
 int main(int argc, char *argv[]){
     imprimirAjudaConsole();
     glutInit(&argc, argv);
-    
+
+    inicializarMusica();
+    carregarMusica();
+
+    Mix_PlayMusic(musicaDeFundo, 1);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition (100, 100);
@@ -692,12 +644,10 @@ int main(int argc, char *argv[]){
     glutDisplayFunc(desenhaCena);
     glutReshapeFunc(resize);
     glutKeyboardFunc(keyInput);
+    glutSpecialFunc(specialKeyInput);
     glutPassiveMotionFunc(posicionaCamera);
-    //glutIdleFunc(rotacionarPlanetas);
-    //glutIdleFunc(translacaoPlanetas);
-    glutIdleFunc(mover);
-
+    glutIdleFunc(moverPlanetas);
     
-
     glutMainLoop();
+    return 0;
 }
