@@ -5,7 +5,10 @@
 #include <GL/freeglut.h>
 #include <cmath>
 #include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>      
+#include <SDL/SDL_mixer.h>    
+
+#include "Headers/planetas.h"
+//#include "Headers/musica.h"
 
 using namespace std;
 
@@ -34,49 +37,9 @@ int eixoY = 0;
 int eixoX = 0;
 
 static float xMouse = 250, yMouse = 250;        // (x,y) do ponteiro do mouse
-
-typedef struct angulo
-{
-  float x,y,z;
-} Angulo;
-
-typedef struct planeta
-{
-  int textura;
-  float anguloX;
-  float anguloY;
-  Angulo angulo_rotacao;
-  Angulo angulo_translacao;
-  float medida;
-
-}Planeta;
-
-Planeta CriaPlaneta(int textura, float anguloX, float anguloY, float x_rotate, float y_rotate, float z_rotate, float x_translate, float y_translate, float z_translate, float medida)
-{
-  Angulo a,b;
-  a.x = x_rotate;
-  b.y = y_rotate;
-  a.z = z_rotate;
-
-  b.x = x_translate;
-  b.y = y_translate;
-  b.z = z_translate;
-
-  Planeta s;
-  s.textura = textura;
-  s.anguloX = anguloX;
-  s.anguloY = anguloY;
-  s.angulo_rotacao = a;
-  s.angulo_translacao = b;
-
-  s.medida = medida;
-
-  return s;
-}
-
 Planeta sol,mercurio,venus,terra,marte,jupiter,saturno,urano,neturno,plutao;
 
-Mix_Music *musicaDeFundo = NULL;
+Mix_Music *musicaDeFundo;
 
 
 void inicializarMusica()
@@ -92,6 +55,7 @@ void carregarMusica()
     if(musicaDeFundo == NULL)
       cout << "nada" << endl;
 }
+
 // Escreve uma cadeia de caracteres
 void escreveTextoNaTela(void *font, char *string){
     char *c;
@@ -292,10 +256,6 @@ void desenhaEsfera(Planeta planeta)
 
 }
 
-void desenhabackgroung()
-{
-
-}
 // Configuração inicial do OpenGL e GLUT
 void setup(void){
   
@@ -440,10 +400,10 @@ void keyInput(unsigned char key, int x, int y){
         camera = 2;
         break; 
     case 51: //1
-        camera = 3;
+        //camera = 3;
         break;
     case 52: //2
-        camera = 4;
+        //camera = 4;
         break;              
     case 'w':
     case 'W':
@@ -636,6 +596,7 @@ int main(int argc, char *argv[]){
     carregarMusica();
 
     Mix_PlayMusic(musicaDeFundo, 1);
+    
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition (100, 100);
