@@ -27,11 +27,22 @@ Acesse a pasta "MakeFile" e abra-a no Terminal
 Digite o seguinte comando: "make run"
 
 make run
+
 Implementações:
 Redimensionamento da janela de visualização sem perda da razão de aspecto.
 Música de fundo durante a execução da cena.
 Fidelidade em relação ao tamanho real dos planetas.
-
+Ligar e desligar a iluminação do OpenGL
+Ligar e desligar a fonte de luz(sol)
+Controle sobre a intensidade difusa da luz(sol)
+Controle sobre a intensidade especular da luz(sol)
+Controle sobre a intensidade especular da luz(Ambiente Global)
+Controle sobre o expoente especular do material
+Controle sobre a velocidade de translação do sistema
+Controle sobre a velocidade de rotação do sistema
+Controle sobre o modo de fonte de luz (posicional ou direcional)
+Duas câmeras de visualização do sistema
+Controle sobre as câmeras, controlados pelas setas, e o seu zoom
 
 Alunos participantes:
 Bruna Gomes Camilo

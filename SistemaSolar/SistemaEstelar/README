@@ -1,0 +1,51 @@
+Instruções para instalação dos arquivos adicionais:
+Este jogo foi implementado no ambiente Linux e para compilar ele no mesmo ambiente é necessário fazer a instalação das seguintes bibliotecas:
+FreeGlut
+Glew
+SOIL
+SDL
+Para instalação em ambiente Linux:
+No o terminal e digite os seguintes comandos:
+
+Certifique que esta tudo funcionando:
+sudo apt-get update
+sudo apt-get install build-essential
+FreeGlut:
+sudo apt-get install freeglut3-dev
+Glew:
+sudo apt-get install libglew-dev
+SOIL:
+sudo apt install libsoil-dev
+SDL:
+sudo apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
+Instruções para execução:
+
+Acesse a pasta "Arquivos"
+
+Acesse a pasta "MakeFile" e abra-a no Terminal
+
+Digite o seguinte comando: "make run"
+
+make run
+
+Implementações:
+Redimensionamento da janela de visualização sem perda da razão de aspecto.
+Música de fundo durante a execução da cena.
+Fidelidade em relação ao tamanho real dos planetas.
+Ligar e desligar a iluminação do OpenGL
+Ligar e desligar a fonte de luz(sol)
+Controle sobre a intensidade difusa da luz(sol)
+Controle sobre a intensidade especular da luz(sol)
+Controle sobre a intensidade especular da luz(Ambiente Global)
+Controle sobre o expoente especular do material
+Controle sobre a velocidade de translação do sistema
+Controle sobre a velocidade de rotação do sistema
+Controle sobre o modo de fonte de luz (posicional ou direcional)
+Duas câmeras de visualização do sistema
+Controle sobre as câmeras, controlados pelas setas, e o seu zoom
+
+Alunos participantes:
+Bruna Gomes Camilo
+Erick Henrique Dutra de Souza
+Leonardo Mendes de Araújo
+Lucas Cota Dornelas

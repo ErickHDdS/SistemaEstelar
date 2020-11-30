@@ -3,7 +3,7 @@ OPCOES_COMPILADOR=-I. -I/usr/include/SOIL -lglut -lGLU -lSOIL -lGLEW -lGL -lm -l
 TODOS_ARQUIVOS_PONTOH = 
 TODOS_ARQUIVOS_OBJ = planetas.o main.o
 
-%.o: ../%.cpp $(TODOS_ARQUIVOS_PONTOH)
+%.o: ../Source/%.cpp $(TODOS_ARQUIVOS_PONTOH)
 	$(CC) -o $@ -c $< $(OPCOES_COMPILADOR)
 
 all: $(TODOS_ARQUIVOS_OBJ)
